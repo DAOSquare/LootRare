@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LootRare
 // @namespace    http://tampermonkey.net/
-// @version      0.37
+// @version      0.38
 // @description  Help you choose Loot Bag
 // @author       dashuo
 // @match        https://opensea.io/collection/lootproject
@@ -13,43 +13,42 @@
 // @resource DATALootItems https://raw.githubusercontent.com/Anish-Agnihotri/dhof-loot/master/output/occurences.json
 // @resource DATALootBags https://raw.githubusercontent.com/ruyan768/loot-tools/main/loot.json
 // ==/UserScript==
- 
+
 var dataRare = GM_getResourceText('DATALootRare')
 var dataItems = GM_getResourceText('DATALootItems')
 var dataBags = GM_getResourceText('DATALootBags')
 var gLootRare = JSON.parse(dataRare);
 var gLootItems = JSON.parse(dataItems);
 var gLootBags = JSON.parse(dataBags);
- 
- 
+
+
 var inited = false;
- 
+
 function findRareByLootId(lootid) {
   var index = gLootRare.findIndex(function (x) { return x.lootId === lootid;} );
   return gLootRare[index];
 }
- 
+
 function findBagByLootId(lootid) {
   var index = gLootBags.findIndex(function (x) { return x.id === lootid;} );
   return gLootBags[index];
 }
- 
+
 function parseLootId(bagName) {
     var paragraph = bagName;
     var regex = /Bag #(\d+)/;
     var found = paragraph.match(regex);
     return parseInt(found[1]);
 }
- 
+
 function getRarity(name) {
     var result = gLootItems.hasOwnProperty(name);
-    console.log(result);
     if (!result) {
         return 0;
     }
     return gLootItems[name];
 }
- 
+
 function rarityCSS(value) {
     let types = ["common", "uncommon", "rare", "epic", "legendary", "mythic"];
     if (value == 1) {
@@ -60,7 +59,7 @@ function rarityCSS(value) {
     }
     return "base"
 }
- 
+
 function genSVG(bag) {
     let parts = ""
     let y = 20;
@@ -76,14 +75,11 @@ function genSVG(bag) {
     parts += '</svg>';
     return parts;
 }
- 
-//var staticSvg = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; } .legendary { fill: rgb(248, 183, 62); font-family: serif; font-size: 14px; } .mythic { fill: rgb(255, 68, 183); font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">Ghost Wand</text><text x="10" y="40" class="base">Shirt</text><text x="10" y="60" class="legendary">Full Helm of Anger</text><text x="10" y="80" class="legendary">War Belt of Perfection</text><text x="10" y="100" class="mythic">"Skull Bite" Hard Leather Boots of Reflection +1</text><text x="10" y="120" class="legendary">Wool Gloves of Skill</text><text x="10" y="140" class="base">Amulet</text><text x="10" y="160" class="base">Titanium Ring</text><text x="10" y="280" class="base">###PATCHED###</text></svg>';
+
 function onwheelevent(event) {
     event.preventDefault();
- 
- 
- 
- 
+
+
     var elements = document.getElementsByClassName("AssetCardFooter--name");
     for (var i = 0; i < elements.length; i++) {
         elements[i].style.color = "red";
@@ -92,20 +88,15 @@ function onwheelevent(event) {
         var loot = findRareByLootId(lootid);
         var bag = findBagByLootId(lootid);
         var staticSVG = genSVG(bag);
-        console.log(staticSVG);
- 
+
         var encodedData = btoa(staticSVG);
         var base64SvgImage = 'data:image/svg+xml;base64,' + encodedData;
-        console.log(base64SvgImage);
-    //    console.log(bag);
         var descDIV = elements[i].parentElement.parentElement.parentElement;
         var girdDIV = descDIV.parentElement;
-        //console.log(girdDIV);
         var imgsvg = girdDIV.getElementsByClassName('Image--image')[0];
-        console.log(imgsvg);
- 
+
         imgsvg.src = base64SvgImage;
- 
+
         var annotations = descDIV.getElementsByClassName('AssetCardFooter--annotations');
         if (annotations !== undefined) {
             var parentItem = annotations[0];
@@ -119,10 +110,10 @@ function onwheelevent(event) {
         }
     }
 }
- 
+
 (function() {
     'use strict';
- 
+
     if (document.readyState == "complete" || document.readyState == "loaded" || document.readyState == "interactive") {
         document.addEventListener('wheel', onwheelevent);
     }
